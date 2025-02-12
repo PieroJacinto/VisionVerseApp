@@ -40,7 +40,16 @@ const Login = () => {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = `${import.meta.env.VITE_API_URL}/auth/google`;
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL;
+      if (!apiUrl) {
+        console.error('VITE_API_URL no está definida');
+        return;
+      }
+      window.location.href = `${apiUrl}/auth/google`;
+    } catch (error) {
+      console.error('Error al iniciar sesión con Google:', error);
+    }
   };
 
   return (
