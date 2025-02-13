@@ -7,16 +7,14 @@ import { configurePassport } from './config/passport.js';
 import authRoutes from './routes/auth.js';
 import dotenv from 'dotenv';
 
-// Cargar variables de entorno
 dotenv.config();
 
 const app = express();
 
-// Configuración de CORS
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? process.env.FRONTEND_URL_PROD
-    : process.env.FRONTEND_URL_DEV,
+    ? [process.env.FRONTEND_URL_PROD]
+    : ['http://localhost:5173'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -33,7 +31,10 @@ app.use(session({
     secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
     maxAge: 24 * 60 * 60 * 1000,
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    domain: process.env.NODE_ENV === 'production' 
+      ? '.vercel.app'  // Ajusta esto según tu dominio
+      : 'localhost'
   }
 }));
 
@@ -69,10 +70,12 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, () => {
-  console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
-  console.log('Ambiente:', process.env.NODE_ENV || 'development');
-  console.log('URL Frontend:', process.env.FRONTEND_URL_DEV);
-});
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
+    console.log('Ambiente:', process.env.NODE_ENV || 'development');
+    console.log('URL Frontend:', process.env.FRONTEND_URL_DEV);
+  });
+}
 
 export default app;

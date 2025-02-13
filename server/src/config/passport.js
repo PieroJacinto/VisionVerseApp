@@ -5,17 +5,14 @@ import * as process from 'process';
 const getCallbackURL = () => {
   const isProduction = process.env.NODE_ENV === 'production';
   const baseURL = isProduction 
-    ? process.env.FRONTEND_URL_PROD 
+    ? `https://${process.env.VERCEL_URL}`  // Usar VERCEL_URL en producción
     : 'http://localhost:3000';
   
-  // Log para debugging
   console.log('Environment:', process.env.NODE_ENV);
   console.log('Base URL:', baseURL);
+  console.log('VERCEL_URL:', process.env.VERCEL_URL);
   
-  const callbackURL = `${baseURL}/api/auth/google/callback`;
-  console.log('Callback URL:', callbackURL);
-  
-  return callbackURL;
+  return `${baseURL}/api/auth/google/callback`;
 };
 
 export const configurePassport = () => {
