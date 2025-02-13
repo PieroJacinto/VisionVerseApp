@@ -13,12 +13,13 @@ const app = express();
 
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? process.env.VERCEL_URL 
-    : 'http://localhost:5173',
+    ? [process.env.FRONTEND_URL_PROD]
+    : ['http://localhost:5173'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
 app.use(express.json());
 
 // Configuración de sesión
@@ -30,10 +31,7 @@ app.use(session({
     secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
     maxAge: 24 * 60 * 60 * 1000,
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-    domain: process.env.NODE_ENV === 'production' 
-      ? '.vercel.app'  // Ajusta esto según tu dominio
-      : 'localhost'
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
   }
 }));
 
@@ -69,12 +67,10 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 3000;
 
-if (process.env.NODE_ENV !== 'production') {
-  app.listen(PORT, () => {
-    console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
-    console.log('Ambiente:', process.env.NODE_ENV || 'development');
-    console.log('URL Frontend:', process.env.FRONTEND_URL_DEV);
-  });
-}
+app.listen(PORT, () => {
+  console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
+  console.log('Ambiente:', process.env.NODE_ENV || 'development');
+  console.log('URL Frontend:', process.env.FRONTEND_URL_DEV);
+});
 
 export default app;
