@@ -1,14 +1,13 @@
 {
-  "type": "module",
-  "name": "visionverseapp",
+  "name": "visionverse",
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently \"cd server && npm run dev\" \"cd client && npm run dev\"",
-    "build": "cd client && npm run build",
-    "start": "cd server && npm start"
+    "build": "cd client && npm install && npm run build",
+    "start": "node server/src/index.js",
+    "dev": "concurrently \"cd server && npm run dev\" \"cd client && npm run dev\""
   },
-  "devDependencies": {
-    "concurrently": "^8.0.0"
+  "dependencies": {
+    "concurrently": "^8.0.1"
   }
 }

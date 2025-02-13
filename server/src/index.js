@@ -13,13 +13,12 @@ const app = express();
 
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? [process.env.FRONTEND_URL_PROD]
-    : ['http://localhost:5173'],
+    ? process.env.VERCEL_URL 
+    : 'http://localhost:5173',
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
-
 app.use(express.json());
 
 // Configuración de sesión
