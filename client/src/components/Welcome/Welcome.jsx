@@ -7,10 +7,16 @@ const Welcome = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Función helper para obtener la URL base de la API
+  const getApiUrl = () => {
+    return window.location.origin;
+  };
+
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await fetch('http://localhost:3000/api/auth/check-auth', {
+        const apiUrl = getApiUrl();
+        const response = await fetch(`${apiUrl}/api/auth/check-auth`, {
           method: 'GET',
           credentials: 'include',
           headers: {
@@ -47,6 +53,27 @@ const Welcome = () => {
     checkAuth();
   }, [navigate]);
 
+  const handleLogout = async () => {
+    try {
+      const apiUrl = getApiUrl();
+      const response = await fetch(`${apiUrl}/api/auth/logout`, {
+        method: 'GET',
+        credentials: 'include',
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        navigate('/login');
+      } else {
+        throw new Error('Error durante el logout');
+      }
+    } catch (error) {
+      console.error('Error durante el logout:', error);
+      setError('Error al cerrar sesión');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -76,17 +103,7 @@ const Welcome = () => {
           <p className="mb-4"><span className="font-semibold">Nombre:</span> {user.displayName}</p>
         )}
         <button
-          onClick={async () => {
-            try {
-              await fetch('http://localhost:3000/api/auth/logout', {
-                method: 'GET',
-                credentials: 'include',
-              });
-              navigate('/login');
-            } catch (error) {
-              console.error('Error durante el logout:', error);
-            }
-          }}
+          onClick={handleLogout}
           className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
         >
           Cerrar sesión

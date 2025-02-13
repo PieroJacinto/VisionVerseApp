@@ -2,6 +2,22 @@ import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import passport from 'passport';
 import * as process from 'process';
 
+const getCallbackURL = () => {
+  const isProduction = process.env.NODE_ENV === 'production';
+  const baseURL = isProduction 
+    ? process.env.FRONTEND_URL_PROD 
+    : 'http://localhost:3000';
+  
+  // Log para debugging
+  console.log('Environment:', process.env.NODE_ENV);
+  console.log('Base URL:', baseURL);
+  
+  const callbackURL = `${baseURL}/api/auth/google/callback`;
+  console.log('Callback URL:', callbackURL);
+  
+  return callbackURL;
+};
+
 export const configurePassport = () => {
   // Serialización
   passport.serializeUser((user, done) => {
@@ -20,9 +36,7 @@ export const configurePassport = () => {
   passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: process.env.NODE_ENV === 'production'
-      ? `${process.env.BACKEND_URL}/api/auth/google/callback`
-      : 'http://localhost:3000/api/auth/google/callback',
+    callbackURL: getCallbackURL(),
     proxy: true
   },
   function(accessToken, refreshToken, profile, done) {

@@ -1,9 +1,22 @@
+// authController.js
 import passport from 'passport';
 import * as process from 'process';
 
-const FRONTEND_URL = process.env.NODE_ENV === 'production'
-  ? process.env.FRONTEND_URL_PROD
-  : process.env.FRONTEND_URL_DEV || 'http://localhost:5173';
+const getURLs = () => {
+  const isProduction = process.env.NODE_ENV === 'production';
+  const baseURL = isProduction ? process.env.FRONTEND_URL_PROD : 'http://localhost:3000';
+  const frontendURL = isProduction ? process.env.FRONTEND_URL_PROD : 'http://localhost:5173';
+  
+  // Log para debugging
+  console.log('Environment:', process.env.NODE_ENV);
+  console.log('Base URL:', baseURL);
+  console.log('Frontend URL:', frontendURL);
+  
+  return {
+    frontendURL,
+    callbackURL: `${baseURL}/api/auth/google/callback`
+  };
+};
 
 class AuthController {
   checkAuth(req, res) {
@@ -25,46 +38,48 @@ class AuthController {
 
   initiateGoogleAuth(req, res, next) {
     console.log('Iniciando autenticación con Google');
+    const { callbackURL } = getURLs();
+    console.log('Using callback URL:', callbackURL);
+    
     passport.authenticate('google', { 
       scope: ['profile', 'email'],
-      callbackURL: process.env.NODE_ENV === 'production'
-        ? `${process.env.FRONTEND_URL_PROD}/api/auth/google/callback`
-        : 'http://localhost:3000/api/auth/google/callback'
+      callbackURL
     })(req, res, next);
   }
 
   handleGoogleCallback(req, res, next) {
     console.log('Callback de Google recibido');
+    const { frontendURL, callbackURL } = getURLs();
+    
     passport.authenticate('google', {
-      callbackURL: process.env.NODE_ENV === 'production'
-        ? `${process.env.FRONTEND_URL_PROD}/api/auth/google/callback`
-        : 'http://localhost:3000/api/auth/google/callback'
+      callbackURL
     }, (err, user, info) => {
       if (err) {
         console.error('Error en autenticación:', err);
-        return res.redirect(`${FRONTEND_URL}/login?error=auth_failed`);
+        return res.redirect(`${frontendURL}/login?error=auth_failed`);
       }
       
       if (!user) {
         console.log('No se encontró usuario');
-        return res.redirect(`${FRONTEND_URL}/login?error=unauthorized`);
+        return res.redirect(`${frontendURL}/login?error=unauthorized`);
       }
       
       req.logIn(user, (err) => {
         if (err) {
           console.error('Error en login:', err);
-          return res.redirect(`${FRONTEND_URL}/login?error=auth_failed`);
+          return res.redirect(`${frontendURL}/login?error=auth_failed`);
         }
         
         console.log('Usuario autenticado exitosamente, redirigiendo a welcome');
-        return res.redirect(`${FRONTEND_URL}/welcome`);
+        return res.redirect(`${frontendURL}/welcome`);
       });
     })(req, res, next);
   }
 
   logout(req, res) {
     req.logout(() => {
-      res.json({ success: true });
+      const { frontendURL } = getURLs();
+      res.json({ success: true, redirectUrl: `${frontendURL}/login` });
     });
   }
 }

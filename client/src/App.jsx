@@ -10,10 +10,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/welcome" element={<Welcome />} />
         <Route path="/" element={<Navigate to="/login" replace />} />
-        <Route 
-          path="/auth/google/callback" 
-          element={<div>Procesando autenticación...</div>} 
-        />
+        {/* Removemos la ruta de callback ya que será manejada por el backend */}
       </Routes>
     </Router>
   );

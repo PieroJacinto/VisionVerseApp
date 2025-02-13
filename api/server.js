@@ -1,12 +1,10 @@
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 import { createApp } from '../server/src/index.js';
-import * as process from 'process';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const app = createApp();
-
-// Para desarrollo local
-if (process.env.NODE_ENV !== 'production') {
-  const PORT = process.env.PORT || 3000;
-  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-}
 
 export default app;

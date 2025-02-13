@@ -41,11 +41,12 @@ const Login = () => {
 
   const handleGoogleLogin = () => {
     try {
+      // En desarrollo, usa la URL del backend directamente
       const apiUrl = import.meta.env.PROD 
-        ? '/api'
+        ? window.location.origin
         : 'http://localhost:3000';
       
-      console.log('Intentando conectar a:', `${apiUrl}/api/auth/google`);
+      console.log('Redirigiendo a:', `${apiUrl}/api/auth/google`);
       window.location.href = `${apiUrl}/api/auth/google`;
     } catch (error) {
       console.error('Error al iniciar sesión con Google:', error);
