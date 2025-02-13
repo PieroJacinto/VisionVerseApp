@@ -25,12 +25,21 @@ class AuthController {
 
   initiateGoogleAuth(req, res, next) {
     console.log('Iniciando autenticación con Google');
-    passport.authenticate('google', { scope: ['profile', 'email'] })(req, res, next);
+    passport.authenticate('google', { 
+      scope: ['profile', 'email'],
+      callbackURL: process.env.NODE_ENV === 'production'
+        ? `${process.env.FRONTEND_URL_PROD}/api/auth/google/callback`
+        : 'http://localhost:3000/api/auth/google/callback'
+    })(req, res, next);
   }
 
   handleGoogleCallback(req, res, next) {
     console.log('Callback de Google recibido');
-    passport.authenticate('google', (err, user, info) => {
+    passport.authenticate('google', {
+      callbackURL: process.env.NODE_ENV === 'production'
+        ? `${process.env.FRONTEND_URL_PROD}/api/auth/google/callback`
+        : 'http://localhost:3000/api/auth/google/callback'
+    }, (err, user, info) => {
       if (err) {
         console.error('Error en autenticación:', err);
         return res.redirect(`${FRONTEND_URL}/login?error=auth_failed`);

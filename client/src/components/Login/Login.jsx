@@ -41,12 +41,12 @@ const Login = () => {
 
   const handleGoogleLogin = () => {
     try {
-      const apiUrl = import.meta.env.VITE_API_URL;
-      if (!apiUrl) {
-        console.error('VITE_API_URL no está definida');
-        return;
-      }
-      window.location.href = `${apiUrl}/auth/google`;
+      const apiUrl = import.meta.env.PROD 
+        ? '/api'
+        : 'http://localhost:3000';
+      
+      console.log('Intentando conectar a:', `${apiUrl}/api/auth/google`);
+      window.location.href = `${apiUrl}/api/auth/google`;
     } catch (error) {
       console.error('Error al iniciar sesión con Google:', error);
     }

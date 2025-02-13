@@ -10,7 +10,7 @@ const Welcome = () => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await fetch('http://localhost:3000/auth/check-auth', {
+        const response = await fetch('http://localhost:3000/api/auth/check-auth', {
           method: 'GET',
           credentials: 'include',
           headers: {
@@ -78,7 +78,7 @@ const Welcome = () => {
         <button
           onClick={async () => {
             try {
-              await fetch('http://localhost:3000/auth/logout', {
+              await fetch('http://localhost:3000/api/auth/logout', {
                 method: 'GET',
                 credentials: 'include',
               });
