@@ -9,68 +9,82 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const app = express();
+export const createApp = () => {
+  const app = express();
+  
+  // Allow both the main domain and any Vercel preview URLs
+  const allowedOrigins = [
+    process.env.FRONTEND_URL_PROD,
+    `https://${process.env.VERCEL_URL}`,
+    ...(process.env.NODE_ENV === 'development' ? ['http://localhost:5173'] : [])
+  ];
 
-app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? [process.env.FRONTEND_URL_PROD]
-    : ['http://localhost:5173'],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+  app.use(cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        console.log('Origin not allowed:', origin);
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+  }));
 
-app.use(express.json());
+  app.use(express.json());
 
-// Configuración de sesión
-app.use(session({
-  secret: process.env.SESSION_SECRET || 'your-secret-key',
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    secure: process.env.NODE_ENV === 'production',
-    httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000,
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
-  }
-}));
+  app.use(session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: process.env.NODE_ENV === 'production',
+      httpOnly: true,
+      maxAge: 24 * 60 * 60 * 1000,
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+    }
+  }));
 
-// Configuración de Passport
-app.use(passport.initialize());
-app.use(passport.session());
-configurePassport();
+  app.use(passport.initialize());
+  app.use(passport.session());
+  configurePassport();
 
-// Rutas
-
-// Al inicio de todas las rutas
-app.use((req, res, next) => {
-  console.log('Recibida petición:', {
-    method: req.method,
-    path: req.path,
-    origin: req.headers.origin,
-    host: req.headers.host
+  app.use((req, res, next) => {
+    console.log('Request:', {
+      method: req.method,
+      path: req.path,
+      origin: req.headers.origin,
+      host: req.headers.host
+    });
+    next();
   });
-  next();
-});
-app.use('/api/auth', authRoutes);
 
-// Health check endpoint
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok' });
-});
+  app.use('/api/auth', authRoutes);
 
-// Manejo de errores
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ error: 'Algo salió mal!' });
-});
+  app.get('/api/health', (req, res) => {
+    res.json({ 
+      status: 'ok',
+      env: process.env.NODE_ENV,
+      vercelUrl: process.env.VERCEL_URL 
+    });
+  });
 
-const PORT = process.env.PORT || 3000;
+  app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({ error: 'Something went wrong!' });
+  });
 
-app.listen(PORT, () => {
-  console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
-  console.log('Ambiente:', process.env.NODE_ENV || 'development');
-  console.log('URL Frontend:', process.env.FRONTEND_URL_DEV);
-});
+  if (!process.env.VERCEL_URL) {
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => {
+      console.log(`Server running on http://localhost:${PORT}`);
+      console.log('Environment:', process.env.NODE_ENV);
+    });
+  }
 
-export default app;
+  return app;
+};
+
+export default createApp();
