@@ -4,13 +4,12 @@ import * as process from 'process';
 
 const getURLs = () => {
   const isProduction = process.env.NODE_ENV === 'production';
-  const baseURL = isProduction ? process.env.FRONTEND_URL_PROD : 'http://localhost:3000';
-  const frontendURL = isProduction ? process.env.FRONTEND_URL_PROD : 'http://localhost:5173';
-  
-  // Log para debugging
-  console.log('Environment:', process.env.NODE_ENV);
-  console.log('Base URL:', baseURL);
-  console.log('Frontend URL:', frontendURL);
+  const baseURL = isProduction 
+    ? `https://${process.env.VERCEL_URL}` 
+    : 'http://localhost:3000';
+  const frontendURL = isProduction 
+    ? `https://${process.env.VERCEL_URL}`
+    : 'http://localhost:5173';
   
   return {
     frontendURL,
